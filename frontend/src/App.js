@@ -26,7 +26,7 @@ function Home() {
         <div style={{ marginTop: '20px' }}>
           <h3>Welcome, {user}! 👋</h3>
 
-          <EmotionCapture />
+        <EmotionCapture />
           
           
           <button onClick={handleLogout} style={{ padding: '10px 20px', cursor: 'pointer', background: '#ff4d4d', color: 'white', border: 'none' }}>
