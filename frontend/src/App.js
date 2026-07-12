@@ -4,24 +4,24 @@ function App() {
   const [message, setMessage] = useState('Loading...');
 
   useEffect(() => {
-    // Backend se data fetch kar rahe hain
+    // Backend  (data fetch)
     fetch('http://127.0.0.1:8000/api/health/')
       .then(res => res.json())
       .then(data => {
-        setMessage(data.message); // Jo message API se aayega, wo set hoga
+        setMessage(data.message); 
       })
       .catch(err => {
         setMessage('Backend not connected');
         console.error('Error fetching health check:', err);
       });
-  }, []); // [] ka matlab: ye code sirf page load hone par ek baar chalega
+  }, []); 
 
   return (
     <div style={{ textAlign: 'center', marginTop: '50px' }}>
       <h1>Resonaa</h1>
       <p>Emotion-Based Music Recommendation</p>
       
-      {/* Backend ka response yahan dikhega */}
+      {/* Backend response */}
       <h3 style={{ color: 'blue' }}>
         Backend API Status: {message}
       </h3>

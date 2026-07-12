@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',       
     'corsheaders',  
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -77,10 +78,12 @@ WSGI_APPLICATION = 'resonaa_api.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.dummy',
     }
 }
+
+import mongoengine
+mongoengine.connect(db="resonaa_db", host="mongodb://localhost:27017/resonaa_db")
 
 
 # Password validation
