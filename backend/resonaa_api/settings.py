@@ -85,7 +85,10 @@ DATABASES = {
 }
 
 import mongoengine
-mongoengine.connect(db="resonaa_db", host="mongodb://localhost:27017/resonaa_db")
+mongoengine.connect(
+    db="resonaa_db",
+    host="mongodb+srv://resonaa_admin:Resonaa1234@cluster0.xvx9zsp.mongodb.net/resonaa_db?appName=Cluster0"
+)
 
 
 # Password validation
@@ -125,6 +128,13 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+# CORS Settings
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+
+# Security Settings (Local development ke liye)
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

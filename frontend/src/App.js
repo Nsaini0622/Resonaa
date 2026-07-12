@@ -1,31 +1,27 @@
-import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import Signup from './pages/Signup';
 
-function App() {
-  const [message, setMessage] = useState('Loading...');
-
-  useEffect(() => {
-    // Backend  (data fetch)
-    fetch('http://127.0.0.1:8000/api/health/')
-      .then(res => res.json())
-      .then(data => {
-        setMessage(data.message); 
-      })
-      .catch(err => {
-        setMessage('Backend not connected');
-        console.error('Error fetching health check:', err);
-      });
-  }, []); 
-
+// homepage
+function Home() {
   return (
     <div style={{ textAlign: 'center', marginTop: '50px' }}>
       <h1>Resonaa</h1>
       <p>Emotion-Based Music Recommendation</p>
-      
-      {/* Backend response */}
-      <h3 style={{ color: 'blue' }}>
-        Backend API Status: {message}
-      </h3>
+      <Link to="/signup">
+        <button style={{ padding: '10px 20px', cursor: 'pointer' }}>Go to Sign Up</button>
+      </Link>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/signup" element={<Signup />} />
+      </Routes>
+    </Router>
   );
 }
 
