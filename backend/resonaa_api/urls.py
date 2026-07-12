@@ -6,5 +6,8 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/health/', views.health_check, name='health_check'),
+    
+    # Auth APIs
     path('api/users/signup/', user_views.signup, name='signup'),
+    path('api/users/login/', user_views.login, name='login'), # Nayi line
 ]
