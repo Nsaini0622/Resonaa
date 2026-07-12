@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import Signup from './pages/Signup';
 import Login from './pages/Login';
+import EmotionCapture from './components/EmotionCapture';
 
 function Home() {
   // Check 'username' is saved in browser memory or not
@@ -24,6 +25,10 @@ function Home() {
       {user ? (
         <div style={{ marginTop: '20px' }}>
           <h3>Welcome, {user}! 👋</h3>
+
+          <EmotionCapture />
+          
+          
           <button onClick={handleLogout} style={{ padding: '10px 20px', cursor: 'pointer', background: '#ff4d4d', color: 'white', border: 'none' }}>
             Logout
           </button>
