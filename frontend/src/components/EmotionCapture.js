@@ -22,14 +22,49 @@ function EmotionCapture() {
     setEmotion(null);
   };
 
-  const analyzeEmotion = async () => {
-    // for now will show fake response
-    // in next step will connect to backend
-    setEmotion("Detecting...");
+  // const analyzeEmotion = async () => {
+  //   // for now will show fake response
+  //   // in next step will connect to backend
+  //   setEmotion("Detecting...");
     
-    setTimeout(() => {
-      setEmotion("Happy 😊");
-    }, 1500);
+  //   setTimeout(() => {
+  //     setEmotion("Happy 😊");
+  //   }, 1500);
+  // };
+
+    const analyzeEmotion = async () => {
+    setEmotion("Detecting...");
+
+    try {
+      // from browser memory (localStorage) get current user name
+      const username = localStorage.getItem('username');
+      
+      // send request to backend (to newly made api)
+      const response = await fetch('http://127.0.0.1:8000/api/features/facial-emotion/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // sending username and photo (imageSrc) to body
+        body: JSON.stringify({
+          username: username,
+          image: imageSrc
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // get emotion and confidence score from backend
+        setEmotion(`${data.emotion} (Confidence: ${Math.round(data.confidence * 100)}%)`);
+      } else {
+        setEmotion("Error detecting emotion");
+        console.error(data);
+      }
+    } catch (error) {
+      setEmotion("Error connecting to server");
+      console.error(error);
+    }
   };
 
   return (
