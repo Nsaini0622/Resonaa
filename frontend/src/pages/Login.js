@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Container, Paper, TextField, Button, Typography, Box, Alert } from '@mui/material';
 
 function Login() {
   const [formData, setFormData] = useState({ username: '', password: '' });
   const [message, setMessage] = useState('');
-  
+  const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -13,53 +14,64 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     try {
       const response = await fetch('http://127.0.0.1:8000/api/users/login/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
-
       const data = await response.json();
-
       if (response.ok) {
-        // save token to browser (local storage)
         localStorage.setItem('token', data.token);
         localStorage.setItem('username', data.username);
-        
-        setMessage('Login Successful! Redirecting...');
-        
-        // after 1.5 sec automatically send to home page
-        setTimeout(() => {
-          navigate('/');
-        }, 1500);
+        setSuccess(true);
+        setMessage('Login successful! Redirecting...');
+        setTimeout(() => { navigate('/'); window.location.reload(); }, 1500);
       } else {
-        setMessage('Error: ' + data.error);
+        setSuccess(false);
+        setMessage(data.error || 'Invalid credentials');
       }
     } catch (error) {
+      setSuccess(false);
       setMessage('Error connecting to backend');
     }
   };
 
   return (
-    <div style={{ textAlign: 'center', marginTop: '50px' }}>
-      <h2>Login to Resonaa</h2>
-      
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', width: '300px', margin: '0 auto', gap: '15px' }}>
-        <input 
-          type="text" name="username" placeholder="Username or Email" 
-          value={formData.username} onChange={handleChange} required 
-        />
-        <input 
-          type="password" name="password" placeholder="Password" 
-          value={formData.password} onChange={handleChange} required 
-        />
-        <button type="submit">Login</button>
-      </form>
+    <Container maxWidth="xs" sx={{ mt: 8 }}>
+      <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
+        <Typography variant="h5" align="center" gutterBottom sx={{ fontWeight: 'bold', color: '#1a1a2e' }}>
+          Welcome Back
+        </Typography>
+        <Typography variant="body2" align="center" color="text.secondary" sx={{ mb: 3 }}>
+          Login to continue your music journey
+        </Typography>
 
-      <p style={{ color: message.includes('Success') ? 'green' : 'red' }}>{message}</p>
-    </div>
+        <form onSubmit={handleSubmit}>
+          <TextField fullWidth label="Username or Email" name="username" value={formData.username}
+            onChange={handleChange} required margin="normal" />
+          <TextField fullWidth label="Password" name="password" type="password" value={formData.password}
+            onChange={handleChange} required margin="normal" />
+          <Button type="submit" fullWidth variant="contained" size="large"
+            sx={{ mt: 2, background: '#0f3460', '&:hover': { background: '#1a1a2e' } }}>
+            Login
+          </Button>
+        </form>
+
+        {message && (
+          <Alert severity={success ? "success" : "error"} sx={{ mt: 2 }}>
+            {message}
+          </Alert>
+        )}
+
+        <Box sx={{ textAlign: 'center', mt: 2 }}>
+          <Typography variant="body2">
+            Don't have an account?{' '}
+            <Button size="small" onClick={() => navigate('/signup')}>Sign Up</Button>
+          </Typography>
+        </Box>
+      </Paper>
+    </Container>
   );
 }
 
