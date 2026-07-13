@@ -28,7 +28,8 @@ function Signup() {
         setMessage('Success: ' + data.message);
       } else {
         // if email already exists types error occurs
-        setMessage('Error: ' + JSON.stringify(data)); 
+        const errors = Object.values(data).flat().join(' | ');
+        setMessage('Error: ' + errors); 
       }
     } catch (error) {
       setMessage('Error connecting to backend');
