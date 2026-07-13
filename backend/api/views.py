@@ -32,7 +32,7 @@ def analyze_facial_emotion(request):
         'confidence': mood_entry.confidence
     })
 
-# --- TEXT EMOTION API ---
+# --- TEXT EMOTION API (Real AI) ---
 @api_view(['POST'])
 def analyze_text_emotion(request):
     username = request.data.get('username')
@@ -41,33 +41,23 @@ def analyze_text_emotion(request):
     if not username or not text_data:
         return Response({'error': 'Username and Text are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-    text_lower = text_data.lower()
-    
-    # Basic logic for text emotion (jab tak AI na lage)
-    if any(word in text_lower for word in ['sad', 'cry', 'bad', 'hurt', 'pain', 'lonely', 'depressed', 'unhappy']):
-        detected_emotion = 'Sad'
-    elif any(word in text_lower for word in ['happy', 'good', 'great', 'awesome', 'joy', 'win', 'best']):
-        detected_emotion = 'Happy'
-    elif any(word in text_lower for word in ['angry', 'mad', 'hate', 'furious', 'stupid', 'annoyed']):
-        detected_emotion = 'Angry'
-    elif any(word in text_lower for word in ['scared', 'fear', 'terrified', 'anxious', 'nervous']):
-        detected_emotion = 'Fear'
-    else:
-        emotions_list = ['Surprise', 'Neutral', 'Happy']
-        detected_emotion = random.choice(emotions_list)
+    # detect emotion thriugh real ai
+    from .ml_service import detect_text_emotion
+    result = detect_text_emotion(text_data)
 
     mood_entry = MoodHistory(
         username=username,
-        emotion=detected_emotion,
+        emotion=result['emotion'],
         input_type='text',
-        confidence=round(random.uniform(0.70, 0.95), 2)
+        confidence=result['confidence']
     )
     mood_entry.save()
 
     return Response({
         'message': 'Text emotion analyzed successfully',
-        'emotion': detected_emotion,
-        'confidence': mood_entry.confidence
+        'emotion': result['emotion'],
+        'confidence': result['confidence'],
+        'all_scores': result['all_scores']
     })
 
 # --- MOOD HISTORY API ---
