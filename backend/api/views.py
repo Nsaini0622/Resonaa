@@ -35,3 +35,27 @@ def analyze_facial_emotion(request):
         'emotion': detected_emotion,
         'confidence': mood_entry.confidence
     })
+
+
+
+@api_view(['GET'])
+def get_mood_history(request):
+    username = request.query_params.get('username')
+    
+    if not username:
+        return Response({'error': 'Username is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    # get all entries of user from db, new to old time order (order_by('-timestamp')) 
+    history = MoodHistory.objects(username=username).order_by('-timestamp')
+    
+    # convert data ato json
+    history_list = []
+    for entry in history:
+        history_list.append({
+            'emotion': entry.emotion,
+            'confidence': entry.confidence,
+            'input_type': entry.input_type,
+            'timestamp': entry.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        })
+        
+    return Response({'history': history_list})

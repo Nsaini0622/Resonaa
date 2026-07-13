@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react
 import Signup from './pages/Signup';
 import Login from './pages/Login';
 import EmotionCapture from './components/EmotionCapture';
+import Profile from './pages/Profile';
 
 function Home() {
   // Check 'username' is saved in browser memory or not
@@ -25,6 +26,12 @@ function Home() {
       {user ? (
         <div style={{ marginTop: '20px' }}>
           <h3>Welcome, {user}! 👋</h3>
+
+          <Link to="/profile">
+            <button style={{ marginBottom: '20px', padding: '8px 15px', background: '#008CBA', color: 'white', border: 'none' }}>
+              View My Profile & History
+            </button>
+          </Link>
 
         <EmotionCapture />
           
@@ -54,6 +61,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </Router>
   );

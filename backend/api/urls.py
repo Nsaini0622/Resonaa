@@ -3,4 +3,5 @@ from . import views
 
 urlpatterns = [
     path('facial-emotion/', views.analyze_facial_emotion, name='facial_emotion'),
+    path('mood-history/', views.get_mood_history, name='mood_history'), 
 ]

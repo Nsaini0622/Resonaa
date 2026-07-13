@@ -21,16 +21,7 @@ function EmotionCapture() {
     setImageSrc(null);
     setEmotion(null);
   };
-
-  // const analyzeEmotion = async () => {
-  //   // for now will show fake response
-  //   // in next step will connect to backend
-  //   setEmotion("Detecting...");
-    
-  //   setTimeout(() => {
-  //     setEmotion("Happy 😊");
-  //   }, 1500);
-  // };
+  
 
     const analyzeEmotion = async () => {
     setEmotion("Detecting...");
