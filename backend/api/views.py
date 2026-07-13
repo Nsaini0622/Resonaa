@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import MoodHistory
 
-# --- FACIAL EMOTION API ---
+# --- FACIAL EMOTION API (Real AI) ---
 @api_view(['POST'])
 def analyze_facial_emotion(request):
     username = request.data.get('username')
@@ -15,21 +15,23 @@ def analyze_facial_emotion(request):
     if not username or not image_data:
         return Response({'error': 'Username and Image are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-    emotions_list = ['Happy', 'Sad', 'Angry', 'Surprise', 'Neutral', 'Fear']
-    detected_emotion = random.choice(emotions_list)
+    # real AI
+    from .ml_service import detect_facial_emotion
+    result = detect_facial_emotion(image_data)
 
     mood_entry = MoodHistory(
         username=username,
-        emotion=detected_emotion,
+        emotion=result['emotion'],
         input_type='facial',
-        confidence=round(random.uniform(0.75, 0.98), 2)
+        confidence=result['confidence']
     )
     mood_entry.save()
 
     return Response({
         'message': 'Emotion analyzed successfully',
-        'emotion': detected_emotion,
-        'confidence': mood_entry.confidence
+        'emotion': result['emotion'],
+        'confidence': result['confidence'],
+        'all_scores': result['all_scores']
     })
 
 # --- TEXT EMOTION API (Real AI) ---
