@@ -1,7 +1,9 @@
 import React, { useRef, useState, useCallback } from 'react';
 import Webcam from 'react-webcam';
+import { useTheme } from '@mui/material/styles';
 
 function EmotionCapture() {
+  const theme = useTheme();
   const webcamRef = useRef(null);
   
   const [imageSrc, setImageSrc] = useState(null);
@@ -21,7 +23,7 @@ function EmotionCapture() {
     setImageSrc(null);
     setEmotion(null);
     setSongs([]);
-    setTextInput(""); // Text bhi clear kardo
+    setTextInput(""); 
   };
   
   const fetchSongs = async (detectedMood) => {
@@ -37,7 +39,6 @@ function EmotionCapture() {
     }
   };
 
-  // Facial Emotion API Call
   const analyzeEmotion = async () => {
     setEmotion("Detecting...");
     setSongs([]);
@@ -62,7 +63,6 @@ function EmotionCapture() {
     }
   };
 
-  // Text Emotion API Call
   const analyzeTextEmotion = async () => {
     if (!textInput) return;
     setEmotion("Reading text...");
@@ -89,19 +89,23 @@ function EmotionCapture() {
   };
 
   return (
-    <div style={{ textAlign: 'center', margin: '20px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '10px', width: '400px' }}>
-      <h3>Mood & Music Detector</h3>
+    <div style={{ textAlign: 'center', margin: '20px auto', padding: '30px', 
+      background: theme.palette.mode === 'dark' ? 'rgba(0, 31, 63, 0.6)' : 'rgba(255, 255, 255, 0.7)', 
+      backdropFilter: 'blur(20px)', border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`, 
+      borderRadius: '24px', width: '100%', maxWidth: '500px', boxShadow: '0 10px 40px rgba(0,0,0,0.1)' 
+    }}>
+      <h3 style={{ color: theme.palette.text.primary, marginTop: 0 }}>Mood & Music Detector</h3>
       
-      {/* TAB BUTTONS (Camera aur Text ke beech switch karne ke liye) */}
+      {/* TAB BUTTONS */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
         <button 
           onClick={() => { setInputType("camera"); retake(); }} 
-          style={{ padding: '8px 15px', cursor: 'pointer', background: inputType === 'camera' ? '#008CBA' : '#eee', color: inputType === 'camera' ? 'white' : 'black', border: 'none', borderRadius: '5px' }}>
+          style={{ padding: '8px 15px', cursor: 'pointer', background: inputType === 'camera' ? theme.palette.primary.main : 'transparent', color: inputType === 'camera' ? 'white' : theme.palette.text.primary, border: `1px solid ${theme.palette.primary.main}`, borderRadius: '999px' }}>
           📷 Camera
         </button>
         <button 
           onClick={() => { setInputType("text"); retake(); }} 
-          style={{ padding: '8px 15px', cursor: 'pointer', background: inputType === 'text' ? '#008CBA' : '#eee', color: inputType === 'text' ? 'white' : 'black', border: 'none', borderRadius: '5px' }}>
+          style={{ padding: '8px 15px', cursor: 'pointer', background: inputType === 'text' ? theme.palette.primary.main : 'transparent', color: inputType === 'text' ? 'white' : theme.palette.text.primary, border: `1px solid ${theme.palette.primary.main}`, borderRadius: '999px' }}>
           ✍️ Text
         </button>
       </div>
@@ -113,9 +117,9 @@ function EmotionCapture() {
             placeholder="How are you feeling today? (e.g. I had a really bad day)" 
             value={textInput}
             onChange={(e) => setTextInput(e.target.value)}
-            style={{ width: '100%', height: '80px', padding: '10px', borderRadius: '5px', boxSizing: 'border-box' }}
+            style={{ width: '100%', height: '80px', padding: '15px', borderRadius: '12px', boxSizing: 'border-box', background: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.2)' : 'white', color: theme.palette.text.primary, border: `1px solid ${theme.palette.mode === 'dark' ? '#4A5568' : '#ccc'}`, fontFamily: 'inherit' }}
           />
-          <button onClick={analyzeTextEmotion} style={{ marginTop: '10px', padding: '10px 20px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+          <button onClick={analyzeTextEmotion} style={{ marginTop: '15px', padding: '10px 24px', background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`, color: 'white', border: 'none', borderRadius: '999px', cursor: 'pointer', fontWeight: 'bold' }}>
             Analyze Text
           </button>
         </div>
@@ -125,16 +129,16 @@ function EmotionCapture() {
       {inputType === "camera" && (
         imageSrc ? (
           <div>
-            <img src={imageSrc} alt="captured face" style={{ width: '100%', borderRadius: '10px' }} />
+            <img src={imageSrc} alt="captured face" style={{ width: '100%', borderRadius: '16px' }} />
             <div style={{ marginTop: '15px', display: 'flex', justifyContent: 'space-around' }}>
-              <button onClick={retake} style={{ padding: '8px 15px', cursor: 'pointer' }}>Retake</button>
-              <button onClick={analyzeEmotion} style={{ padding: '8px 15px', background: '#4CAF50', color: 'white', border: 'none', cursor: 'pointer' }}>Analyze Mood</button>
+              <button onClick={retake} style={{ padding: '8px 20px', cursor: 'pointer', background: 'transparent', border: `1px solid ${theme.palette.text.primary}`, color: theme.palette.text.primary, borderRadius: '999px' }}>Retake</button>
+              <button onClick={analyzeEmotion} style={{ padding: '8px 20px', background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`, color: 'white', border: 'none', cursor: 'pointer', borderRadius: '999px', fontWeight: 'bold' }}>Analyze Mood</button>
             </div>
           </div>
         ) : (
           <div>
-            <Webcam audio={false} ref={webcamRef} screenshotFormat="image/jpeg" style={{ width: '100%', borderRadius: '10px' }} />
-            <button onClick={capture} style={{ marginTop: '15px', padding: '10px 20px', background: '#008CBA', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+            <Webcam audio={false} ref={webcamRef} screenshotFormat="image/jpeg" style={{ width: '100%', borderRadius: '16px' }} />
+            <button onClick={capture} style={{ marginTop: '15px', padding: '10px 24px', background: theme.palette.primary.main, color: 'white', border: 'none', borderRadius: '999px', cursor: 'pointer', fontWeight: 'bold' }}>
               Capture Photo
             </button>
           </div>
@@ -143,26 +147,54 @@ function EmotionCapture() {
 
       {/* RESULTS (EMOTION & SONGS) */}
       {emotion && (
-        <h4 style={{ marginTop: '15px', color: 'blue' }}>Detected Mood: {emotion}</h4>
+        <h4 style={{ marginTop: '20px', color: theme.palette.secondary.main, fontWeight: 'bold' }}>Detected Mood: {emotion}</h4>
       )}
 
       {songs.length > 0 && (
         <div style={{ marginTop: '20px', textAlign: 'left' }}>
-          <h4>Recommended Songs for you:</h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '300px', overflowY: 'auto' }}>
+          <h4 style={{ color: theme.palette.text.primary }}>Recommended Songs for you:</h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '350px', overflowY: 'auto', paddingRight: '5px' }}>
             {songs.map((song, index) => (
-              <div key={index} style={{ display: 'flex', alignItems: 'center', background: '#f9f9f9', padding: '10px', borderRadius: '8px' }}>
-                <img src={song.album_cover} alt="album cover" style={{ width: '50px', height: '50px', borderRadius: '5px', marginRight: '15px' }} />
+              <div 
+                key={index} 
+                className="song-card"
+                style={{ 
+                  display: 'flex', alignItems: 'center', padding: '10px', borderRadius: '12px',
+                  background: theme.palette.mode === 'dark' ? '#B0E0E6' : '#f9f9f9',
+                  border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(214, 245, 255, 0.1)' : 'rgba(0,0,0,0.05)'}`,
+                  transition: 'all 0.2s ease',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => {
+                  if (theme.palette.mode === 'dark') {
+                    e.currentTarget.style.background = '#B0E0E6';
+                    e.currentTarget.querySelector('.song-text').style.color = '#000080';
+                    e.currentTarget.querySelector('.artist-text').style.color = '#001F3F';
+                  } else {
+                    e.currentTarget.style.background = '#e9ecef';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (theme.palette.mode === 'dark') {
+                    e.currentTarget.style.background = 'rgba(25, 25, 112, 0.4)';
+                    e.currentTarget.querySelector('.song-text').style.color = '#D6F5FF';
+                    e.currentTarget.querySelector('.artist-text').style.color = '#B0E0E6';
+                  } else {
+                    e.currentTarget.style.background = '#f9f9f9';
+                  }
+                }}
+              >
+                <img src={song.album_cover} alt="album cover" style={{ width: '55px', height: '55px', borderRadius: '8px', marginRight: '15px' }} />
                 <div style={{ flex: 1 }}>
-                  <p style={{ margin: 0, fontWeight: 'bold' }}>{song.title}</p>
-                  <p style={{ margin: 0, fontSize: '12px', color: 'gray' }}>{song.artist}</p>
+                  <p className="song-text" style={{ margin: 0, fontWeight: 'bold', color: '#000080', transition: 'color 0.2s' }}>{song.title}</p>
+                  <p className="artist-text" style={{ margin: 0, fontSize: '12px', color: '#001F3F', transition: 'color 0.2s' }}>{song.artist}</p>
                 </div>
                 {song.preview_url ? (
-                  <audio controls style={{ height: '30px', width: '130px' }}>
+                  <audio controls style={{ height: '35px', width: '130px' }}>
                     <source src={song.preview_url} type="audio/mpeg" />
                   </audio>
                 ) : (
-                  <a href={song.deezer_link} target="_blank" rel="noreferrer" style={{ fontSize: '12px', color: 'blue' }}>Play</a>
+                  <a href={song.deezer_link} target="_blank" rel="noreferrer" style={{ fontSize: '12px', color: theme.palette.secondary.main, fontWeight: 'bold', textDecoration: 'none' }}>Play</a>
                 )}
               </div>
             ))}

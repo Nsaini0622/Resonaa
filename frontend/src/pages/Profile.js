@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Chip, Box, CircularProgress } from '@mui/material';
+import { Container, Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Chip, Box, CircularProgress, useTheme } from '@mui/material';
 
 function Profile() {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const username = localStorage.getItem('username');
   const navigate = useNavigate();
+  const theme = useTheme(); // Theme se dark mode check karne ke liye
 
   useEffect(() => {
     if (!username) { navigate('/login'); return; }
@@ -34,17 +35,20 @@ function Profile() {
   };
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4 }}>
-      <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
-        <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: '#1a1a2e' }}>
+    <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
+      <Paper elevation={3} sx={{ p: 4, borderRadius: 3, background: theme.palette.mode === 'dark' ? 'rgba(0, 31, 63, 0.6)' : 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(20px)' }}>
+        
+        {/* Username heading ko Light/Bright kiya */}
+        <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: theme.palette.mode === 'dark' ? '#D6F5FF' : '#001F3F' }}>
           {username}'s Mood History
         </Typography>
-        <Button variant="outlined" size="small" onClick={() => navigate('/')} sx={{ mb: 3 }}>
+        
+        <Button variant="outlined" size="small" onClick={() => navigate('/')} sx={{ mb: 3, borderColor: theme.palette.secondary.main, color: theme.palette.mode === 'dark' ? '#F8C8DC' : theme.palette.secondary.main }}>
           ← Back to Home
         </Button>
 
         {loading ? (
-          <Box sx={{ textAlign: 'center', py: 4 }}><CircularProgress /></Box>
+          <Box sx={{ textAlign: 'center', py: 4 }}><CircularProgress color="secondary" /></Box>
         ) : history.length === 0 ? (
           <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
             No mood history yet. Go analyze your emotions!
@@ -53,24 +57,29 @@ function Profile() {
           <TableContainer>
             <Table>
               <TableHead>
-                <TableRow sx={{ background: '#f5f5f5' }}>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Date & Time</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Input Type</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Emotion</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold' }}>Confidence</TableCell>
+                {/* Table Header ko dark/contrast banaya */}
+                <TableRow sx={{ background: theme.palette.mode === 'dark' ? 'rgba(25, 25, 112, 0.8)' : '#f5f5f5' }}>
+                  <TableCell sx={{ fontWeight: 'bold', color: theme.palette.mode === 'dark' ? '#D6F5FF' : '#001F3F' }}>Date & Time</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: theme.palette.mode === 'dark' ? '#D6F5FF' : '#001F3F' }}>Input Type</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: theme.palette.mode === 'dark' ? '#D6F5FF' : '#001F3F' }}>Emotion</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: theme.palette.mode === 'dark' ? '#D6F5FF' : '#001F3F' }}>Confidence</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {history.map((entry, index) => (
-                  <TableRow key={index} sx={{ '&:hover': { background: '#fafafa' } }}>
-                    <TableCell>{entry.timestamp}</TableCell>
+                  <TableRow key={index} sx={{ 
+                    // Hover effect: Jab hover ho to background whiteish hoga, isliye text ko dark (Navy) kar diya
+                    '&:hover': { background: theme.palette.mode === 'dark' ? 'rgba(214, 245, 255, 0.9)' : '#fafafa' },
+                    '&:hover td': { color: theme.palette.mode === 'dark' ? '#000080' : 'inherit' }
+                  }}>
+                    <TableCell sx={{ color: theme.palette.text.primary }}>{entry.timestamp}</TableCell>
                     <TableCell>
-                      <Chip label={entry.input_type} size="small" variant="outlined" />
+                      <Chip label={entry.input_type} size="small" variant="outlined" sx={{ color: 'inherit', borderColor: 'inherit' }} />
                     </TableCell>
                     <TableCell>
                       <Chip label={entry.emotion} color={getEmotionColor(entry.emotion)} size="small" />
                     </TableCell>
-                    <TableCell>{Math.round(entry.confidence * 100)}%</TableCell>
+                    <TableCell sx={{ color: theme.palette.text.primary }}>{Math.round(entry.confidence * 100)}%</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
