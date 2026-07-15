@@ -1,4 +1,3 @@
-import random
 import requests
 import urllib.parse
 from rest_framework.decorators import api_view
@@ -36,7 +35,7 @@ def analyze_facial_emotion(request):
         'all_scores': result['all_scores']
     })
 
-# --- TEXT EMOTION API (Real AI) ---
+# --- TEXT EMOTION API ---
 @api_view(['POST'])
 @token_required
 def analyze_text_emotion(request):
@@ -46,20 +45,52 @@ def analyze_text_emotion(request):
     if not username or not text_data:
         return Response({'error': 'Username and Text are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # detect emotion thriugh real ai
-    from .ml_service import detect_text_emotion
-    result = detect_text_emotion(text_data)
+    try:
+        from .ml_service import detect_text_emotion
+        result = detect_text_emotion(text_data)
+
+        mood_entry = MoodHistory(
+            username=username,
+            emotion=result['emotion'],
+            input_type='text',
+            confidence=result['confidence']
+        )
+        mood_entry.save()
+
+        # This return statement might have been missing or accidentally dedented.
+        return Response({
+            'message': 'Text emotion analyzed successfully',
+            'emotion': result['emotion'],
+            'confidence': result['confidence'],
+            'all_scores': result['all_scores']
+        })
+    except Exception as e:
+        print(f"Text Emotion Error: {e}")
+        return Response({'error': 'Failed to process text'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+# --- VOICE EMOTION API (Real AI) ---
+@api_view(['POST'])
+@token_required
+def analyze_voice_emotion(request):
+    username = request.jwt_username
+    audio_data = request.data.get('audio')
+
+    if not username or not audio_data:
+        return Response({'error': 'Username and Audio data are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    from .ml_service import detect_voice_emotion
+    result = detect_voice_emotion(audio_data)
 
     mood_entry = MoodHistory(
         username=username,
         emotion=result['emotion'],
-        input_type='text',
+        input_type='speech',
         confidence=result['confidence']
     )
     mood_entry.save()
 
     return Response({
-        'message': 'Text emotion analyzed successfully',
+        'message': 'Voice emotion analyzed successfully',
         'emotion': result['emotion'],
         'confidence': result['confidence'],
         'all_scores': result['all_scores']

@@ -7,7 +7,7 @@ function Profile() {
   const [loading, setLoading] = useState(true);
   const username = localStorage.getItem('username');
   const navigate = useNavigate();
-  const theme = useTheme(); // Theme se dark mode check karne ke liye
+  const theme = useTheme(); 
 
   useEffect(() => {
     if (!username) { navigate('/login'); return; }
@@ -43,7 +43,7 @@ function Profile() {
     <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
       <Paper elevation={3} sx={{ p: 4, borderRadius: 3, background: theme.palette.mode === 'dark' ? 'rgba(0, 31, 63, 0.6)' : 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(20px)' }}>
         
-        {/* Username heading ko Light/Bright kiya */}
+      
         <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: theme.palette.mode === 'dark' ? '#D6F5FF' : '#001F3F' }}>
           {username}'s Mood History
         </Typography>
@@ -62,7 +62,6 @@ function Profile() {
           <TableContainer>
             <Table>
               <TableHead>
-                {/* Table Header ko dark/contrast banaya */}
                 <TableRow sx={{ background: theme.palette.mode === 'dark' ? 'rgba(25, 25, 112, 0.8)' : '#f5f5f5' }}>
                   <TableCell sx={{ fontWeight: 'bold', color: theme.palette.mode === 'dark' ? '#D6F5FF' : '#001F3F' }}>Date & Time</TableCell>
                   <TableCell sx={{ fontWeight: 'bold', color: theme.palette.mode === 'dark' ? '#D6F5FF' : '#001F3F' }}>Input Type</TableCell>
@@ -73,7 +72,7 @@ function Profile() {
               <TableBody>
                 {history.map((entry, index) => (
                   <TableRow key={index} sx={{ 
-                    // Hover effect: Jab hover ho to background whiteish hoga, isliye text ko dark (Navy) kar diya
+                    
                     '&:hover': { background: theme.palette.mode === 'dark' ? 'rgba(214, 245, 255, 0.9)' : '#fafafa' },
                     '&:hover td': { color: theme.palette.mode === 'dark' ? '#000080' : 'inherit' }
                   }}>
