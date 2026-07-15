@@ -5,11 +5,13 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import MoodHistory
+from users.auth import token_required
 
 # --- FACIAL EMOTION API (Real AI) ---
 @api_view(['POST'])
+@token_required
 def analyze_facial_emotion(request):
-    username = request.data.get('username')
+    username = request.jwt_username #secured username
     image_data = request.data.get('image')
 
     if not username or not image_data:
@@ -36,8 +38,9 @@ def analyze_facial_emotion(request):
 
 # --- TEXT EMOTION API (Real AI) ---
 @api_view(['POST'])
+@token_required
 def analyze_text_emotion(request):
-    username = request.data.get('username')
+    username = request.jwt_username
     text_data = request.data.get('text')
 
     if not username or not text_data:
@@ -64,8 +67,9 @@ def analyze_text_emotion(request):
 
 # --- MOOD HISTORY API ---
 @api_view(['GET'])
+@token_required
 def get_mood_history(request):
-    username = request.query_params.get('username')
+    username = request.jwt_username
     
     if not username:
         return Response({'error': 'Username is required'}, status=status.HTTP_400_BAD_REQUEST)

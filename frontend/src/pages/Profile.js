@@ -12,9 +12,14 @@ function Profile() {
   useEffect(() => {
     if (!username) { navigate('/login'); return; }
 
-    const fetchHistory = async () => {
+        const fetchHistory = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/features/mood-history/?username=${username}`);
+        const token = localStorage.getItem('token');
+        const response = await fetch(`http://127.0.0.1:8000/api/features/mood-history/`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         const data = await response.json();
         if (response.ok) setHistory(data.history);
       } catch (error) {

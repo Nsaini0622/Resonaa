@@ -10,9 +10,8 @@ function EmotionCapture() {
   const [emotion, setEmotion] = useState(null);
   const [songs, setSongs] = useState([]); 
 
-  // New text states
   const [textInput, setTextInput] = useState("");
-  const [inputType, setInputType] = useState("camera"); // 'camera' or 'text'
+  const [inputType, setInputType] = useState("camera"); 
 
   const capture = useCallback(() => {
     const imageSrc = webcamRef.current.getScreenshot();
@@ -44,11 +43,15 @@ function EmotionCapture() {
     setSongs([]);
 
     try {
-      const username = localStorage.getItem('username');
+      // Token nikalo
+      const token = localStorage.getItem('token');
       const response = await fetch('http://127.0.0.1:8000/api/features/facial-emotion/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username, image: imageSrc }),
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // Token bhej rahe hain
+        },
+        body: JSON.stringify({ image: imageSrc }), // Username bhejne ki zaroorat nahi, backend token se khud nikal lega
       });
 
       const data = await response.json();
@@ -69,11 +72,15 @@ function EmotionCapture() {
     setSongs([]);
 
     try {
-      const username = localStorage.getItem('username');
+      // Token nikalo
+      const token = localStorage.getItem('token');
       const response = await fetch('http://127.0.0.1:8000/api/features/text-emotion/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username, text: textInput }),
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // Token bhej rahe hain
+        },
+        body: JSON.stringify({ text: textInput }), // Username bhejne ki zaroorat nahi
       });
 
       const data = await response.json();
@@ -161,24 +168,20 @@ function EmotionCapture() {
                 style={{ 
                   display: 'flex', alignItems: 'center', padding: '10px', borderRadius: '12px',
                   background: theme.palette.mode === 'dark' ? '#B0E0E6' : '#f9f9f9',
-                  border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(214, 245, 255, 0.1)' : 'rgba(0,0,0,0.05)'}`,
+                  border: `1px solid ${theme.palette.mode === 'dark' ? '#D6F5FF' : 'rgba(0,0,0,0.05)'}`,
                   transition: 'all 0.2s ease',
                   cursor: 'pointer'
                 }}
                 onMouseEnter={(e) => {
                   if (theme.palette.mode === 'dark') {
-                    e.currentTarget.style.background = '#B0E0E6';
-                    e.currentTarget.querySelector('.song-text').style.color = '#000080';
-                    e.currentTarget.querySelector('.artist-text').style.color = '#001F3F';
+                    e.currentTarget.style.background = '#D6F5FF'; 
                   } else {
                     e.currentTarget.style.background = '#e9ecef';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (theme.palette.mode === 'dark') {
-                    e.currentTarget.style.background = 'rgba(25, 25, 112, 0.4)';
-                    e.currentTarget.querySelector('.song-text').style.color = '#D6F5FF';
-                    e.currentTarget.querySelector('.artist-text').style.color = '#B0E0E6';
+                    e.currentTarget.style.background = '#B0E0E6'; 
                   } else {
                     e.currentTarget.style.background = '#f9f9f9';
                   }
