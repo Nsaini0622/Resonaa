@@ -1,4 +1,4 @@
-import random 
+import random
 import requests
 import urllib.parse
 from rest_framework.decorators import api_view
@@ -7,34 +7,36 @@ from rest_framework import status
 from .models import MoodHistory
 from users.auth import token_required
 
-# --- FACIAL EMOTION API (Real AI) ---
+# --- FACIAL EMOTION API ---
 @api_view(['POST'])
 @token_required
 def analyze_facial_emotion(request):
-    username = request.jwt_username #secured username
+    username = request.jwt_username
     image_data = request.data.get('image')
 
     if not username or not image_data:
         return Response({'error': 'Username and Image are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # real AI
-    from .ml_service import detect_facial_emotion
-    result = detect_facial_emotion(image_data)
+    try:
+        from .ml_service import detect_facial_emotion
+        result = detect_facial_emotion(image_data)
 
-    mood_entry = MoodHistory(
-        username=username,
-        emotion=result['emotion'],
-        input_type='facial',
-        confidence=result['confidence']
-    )
-    mood_entry.save()
+        mood_entry = MoodHistory(
+            username=username,
+            emotion=result['emotion'],
+            input_type='facial',
+            confidence=result['confidence']
+        )
+        mood_entry.save()
 
-    return Response({
-        'message': 'Emotion analyzed successfully',
-        'emotion': result['emotion'],
-        'confidence': result['confidence'],
-        'all_scores': result['all_scores']
-    })
+        return Response({
+            'message': 'Emotion analyzed successfully',
+            'emotion': result['emotion'],
+            'confidence': result['confidence'],
+            'all_scores': result['all_scores']
+        })
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # --- TEXT EMOTION API ---
 @api_view(['POST'])
@@ -58,7 +60,6 @@ def analyze_text_emotion(request):
         )
         mood_entry.save()
 
-        # This return statement might have been missing or accidentally dedented.
         return Response({
             'message': 'Text emotion analyzed successfully',
             'emotion': result['emotion'],
@@ -66,10 +67,9 @@ def analyze_text_emotion(request):
             'all_scores': result['all_scores']
         })
     except Exception as e:
-        print(f"Text Emotion Error: {e}")
-        return Response({'error': 'Failed to process text'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
-# --- VOICE EMOTION API (Real AI) ---
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# --- VOICE EMOTION API ---
 @api_view(['POST'])
 @token_required
 def analyze_voice_emotion(request):
@@ -79,23 +79,26 @@ def analyze_voice_emotion(request):
     if not username or not audio_data:
         return Response({'error': 'Username and Audio data are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-    from .ml_service import detect_voice_emotion
-    result = detect_voice_emotion(audio_data)
+    try:
+        from .ml_service import detect_voice_emotion
+        result = detect_voice_emotion(audio_data)
 
-    mood_entry = MoodHistory(
-        username=username,
-        emotion=result['emotion'],
-        input_type='speech',
-        confidence=result['confidence']
-    )
-    mood_entry.save()
+        mood_entry = MoodHistory(
+            username=username,
+            emotion=result['emotion'],
+            input_type='speech',
+            confidence=result['confidence']
+        )
+        mood_entry.save()
 
-    return Response({
-        'message': 'Voice emotion analyzed successfully',
-        'emotion': result['emotion'],
-        'confidence': result['confidence'],
-        'all_scores': result['all_scores']
-    })
+        return Response({
+            'message': 'Voice emotion analyzed successfully',
+            'emotion': result['emotion'],
+            'confidence': result['confidence'],
+            'all_scores': result['all_scores']
+        })
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # --- MOOD HISTORY API ---
 @api_view(['GET'])
@@ -120,26 +123,57 @@ def get_mood_history(request):
     return Response({'history': history_list})
 
 # --- MUSIC RECOMMENDATION API ---
+# iTunes API keywords (separated by language preference)
 EMOTION_TAGS = {
-    'Happy': ['party pop', 'upbeat', 'dance hits', 'bollywood dance', 'punjabi hit', 'happy hindi', 'pakistani pop'],
-    'Sad': ['melancholy', 'sad acoustic', 'heartbreak', 'arijit singh sad', 'bollywood emotional', 'atif aslam sad', 'sad sufi'],
-    'Angry': ['hard rock', 'heavy metal', 'angry rap', 'bollywood rock', 'desi hip hop', 'intense', 'pakistani rock'],
-    'Fear': ['calm ambient', 'relaxing instrumental', 'indian classical flute', 'soothing hindi', 'meditation', 'rabab'],
-    'Surprise': ['electronic', 'synthpop', 'indie hit', 'bollywood mashup', 'fusion india', 'coke studio pakistan'],
-    'Neutral': ['lofi beats', 'chill jazz', 'easy listening', 'bollywood lofi', 'hindi chill', 'urdu acoustic']
+    'English': {
+        'Happy': ['billboard pop', 'hollywood dance hits', 'upbeat english', 'party anthems'],
+        'Sad': ['acoustic sad english', 'melancholy piano', 'english sad song', 'heartbreak pop'],
+        'Angry': ['heavy metal', 'hard rock english', 'punk rock', 'english hip hop'],
+        'Fear': ['ambient calm', 'classical relax', 'meditation soundscape'],
+        'Surprise': ['edm hits', 'electronic dance', 'synthpop english', 'indie alternative'],
+        'Neutral': ['lofi beats', 'chill english pop', 'acoustic chill', 'jazz standards']
+    },
+    'Global': {
+        'Happy': ['pop hits', 'upbeat', 'party', 'dance global'],
+        'Sad': ['acoustic sad', 'piano sad', 'melancholy', 'sad song'],
+        'Angry': ['heavy metal', 'hard rock', 'punk'],
+        'Fear': ['ambient calm', 'classical relax', 'meditation'],
+        'Surprise': ['electronic dance', 'synthpop', 'indie global'],
+        'Neutral': ['lofi beats', 'chill', 'acoustic chill', 'jazz']
+    },
+    'Bollywood': {
+        'Happy': ['bollywood dance', 'hindi pop hits', 'punjabi upbeat', 'badshah party'],
+        'Sad': ['bollywood sad', 'hindi emotional', 'arijit singh sad', 'sad hindi acoustic'],
+        'Angry': ['bollywood rock', 'hindi intense', 'angry bollywood', 'desi hip hop'],
+        'Fear': ['hindi calm', 'bollywood instrumental', 'indian classical flute'],
+        'Surprise': ['bollywood mashup', 'hindi electronic', 'coke studio india'],
+        'Neutral': ['bollywood lofi', 'hindi chill', 'indian acoustic', 'bollywood romantic']
+    },
+    'Pakistani': {
+        'Happy': ['pakistani pop', 'coke studio upbeat', 'hasan raheem', 'ali zafar upbeat', 'pakistani dance', 'bhangra pop'],
+        'Sad': ['kaifi khalil', 'atif aslam sad', 'rahat fateh ali khan', 'pakistani indie sad', 'abdul hannan', 'sad sufi', 'urdu acoustic emotional'],
+        'Angry': ['pakistani rock', 'junoon', 'ep band', 'desi hip hop pakistan', 'young stunners', 'urdu rap'],
+        'Fear': ['rabab instrumental', 'sufi calm', 'meditation urdu', 'pakistani classical', 'qawwali chill'],
+        'Surprise': ['coke studio pakistan', 'nescafe basement', 'umair', 'samar jafri', 'pakistani indie pop', 'velo sound station'],
+        'Neutral': ['urdu lofi', 'pakistani acoustic', 'ali sethi', 'ghazal chill', 'indie pakistan', 'shae gill']
+    }
 }
 
 @api_view(['GET'])
 def get_music_recommendation(request):
     emotion = request.query_params.get('emotion')
+    preference = request.query_params.get('preference', 'Global')
     
     if not emotion:
         return Response({'error': 'Valid emotion is required'}, status=status.HTTP_400_BAD_REQUEST)
         
-    if emotion not in EMOTION_TAGS:
+    if preference not in EMOTION_TAGS:
+        preference = 'Global'
+        
+    if emotion not in EMOTION_TAGS[preference]:
         emotion = 'Neutral'
     
-    selected_query = random.choice(EMOTION_TAGS[emotion])
+    selected_query = random.choice(EMOTION_TAGS[preference][emotion])
     encoded_query = urllib.parse.quote(selected_query)
     
     itunes_url = f"https://itunes.apple.com/search?term={encoded_query}&entity=song&country=IN&limit=15"
@@ -165,7 +199,8 @@ def get_music_recommendation(request):
             random.shuffle(tracks)
             tracks = tracks[:10]
         else:
-            fallback_url = f"https://itunes.apple.com/search?term=bollywood+{emotion}&entity=song&country=IN&limit=10"
+            fallback_query = f"{preference} {emotion}"
+            fallback_url = f"https://itunes.apple.com/search?term={urllib.parse.quote(fallback_query)}&entity=song&country=IN&limit=10"
             fb_res = requests.get(fallback_url, headers=headers)
             for track in fb_res.json().get('results', []):
                 tracks.append({
@@ -176,7 +211,7 @@ def get_music_recommendation(request):
                     'preview_url': track.get('previewUrl'),
                     'deezer_link': track.get('trackViewUrl')
                 })
-            selected_query = f"bollywood {emotion}"
+            selected_query = fallback_query
             
         return Response({
             'emotion': emotion,

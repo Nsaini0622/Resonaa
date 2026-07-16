@@ -1,6 +1,7 @@
 import React, { useRef, useState, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import { useTheme } from '@mui/material/styles';
+import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 
 function EmotionCapture() {
   const theme = useTheme();
@@ -12,6 +13,7 @@ function EmotionCapture() {
 
   const [textInput, setTextInput] = useState("");
   const [inputType, setInputType] = useState("camera");
+  const [musicPref, setMusicPref] = useState("Global"); // 'Global', 'Bollywood', 'Pakistani'
 
   // NATIVE VOICE RECORDING STATES
   const [isRecording, setIsRecording] = useState(false);
@@ -34,9 +36,13 @@ function EmotionCapture() {
   
   const fetchSongs = async (detectedMood) => {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/features/music-recommendations/?emotion=${detectedMood}`);
+      // URL me &preference=... add kiya gaya
+      const res = await fetch(`http://127.0.0.1:8000/api/features/music-recommendations/?emotion=${detectedMood}&preference=${musicPref}`);
       const musicData = await res.json();
-      if (res.ok) setSongs(musicData.tracks);
+      
+      if (res.ok) {
+        setSongs(musicData.tracks);
+      }
     } catch (error) {
       console.error("Error fetching songs", error);
     }
@@ -160,6 +166,22 @@ function EmotionCapture() {
       borderRadius: '24px', width: '100%', maxWidth: '500px', boxShadow: '0 10px 40px rgba(0,0,0,0.1)' 
     }}>
       <h3 style={{ color: theme.palette.text.primary, marginTop: 0 }}>Mood & Music Detector</h3>
+      
+            {/* MUSIC PREFERENCE DROPDOWN */}
+      <FormControl size="small" sx={{ mb: 3, minWidth: 150 }}>
+        <InputLabel sx={{ color: theme.palette.text.primary }}>Music Style</InputLabel>
+        <Select
+          value={musicPref}
+          label="Music Style"
+          onChange={(e) => setMusicPref(e.target.value)}
+          sx={{ color: theme.palette.text.primary, '.MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.primary.main } }}
+        >
+          <MenuItem value="English">🇺🇸 English/Western</MenuItem>
+          <MenuItem value="Bollywood">🇮🇳 Bollywood/Hindi</MenuItem>
+          <MenuItem value="Pakistani">🇵🇰 Pakistani/Urdu</MenuItem>
+          <MenuItem value="Global">🌎 Global Mix</MenuItem>
+        </Select>
+      </FormControl>
       
       {/* TAB BUTTONS */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>

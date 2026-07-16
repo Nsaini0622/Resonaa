@@ -53,25 +53,25 @@ function Profile() {
     fetchHistory();
   }, [username, navigate]);
 
-  // Gradient definitions mapped to emotions
+  // Enhanced Gradients ensuring visibility in Dark Mode
   const getGradients = () => {
     if (theme.palette.mode === 'dark') {
       return {
-        'Happy': { start: '#FF66B2', end: '#FF007F' },    // Rose
-        'Sad': { start: '#B0E0E6', end: '#87CEEB' },      // Sky
-        'Angry': { start: '#4169E1', end: '#0F52BA' },    // Sapphire
-        'Fear': { start: '#E0FFFF', end: '#B0E0E6' },     // Powder
-        'Surprise': { start: '#FFE4E1', end: '#F8C8DC' }, // Petal
-        'Neutral': { start: '#6495ED', end: '#4169E1' }   // Royal
+        'Happy': { start: '#FF1493', end: '#C71585' },    // Bright Neon Pink
+        'Sad': { start: '#00BFFF', end: '#4682B4' },      // Bright Sky Blue
+        'Angry': { start: '#FF4500', end: '#DC143C' },    // Neon Red/Orange
+        'Fear': { start: '#00FA9A', end: '#2E8B57' },     // Neon Teal/Green
+        'Surprise': { start: '#DDA0DD', end: '#8A2BE2' }, // Bright Plum
+        'Neutral': { start: '#1E90FF', end: '#0000CD' }   // Bright Royal Blue
       };
     } else {
       return {
-        'Happy': { start: '#4169E1', end: '#000080' },    // Navy
-        'Sad': { start: '#87CEEB', end: '#0F52BA' },      // Sapphire
-        'Angry': { start: '#FF66B2', end: '#FF007F' },    // Rose
-        'Fear': { start: '#9FE2BF', end: '#008080' },     // Teal
-        'Surprise': { start: '#FFE4E1', end: '#F8C8DC' }, // Petal
-        'Neutral': { start: '#B0E0E6', end: '#87CEEB' }   // Sky
+        'Happy': { start: '#4169E1', end: '#000080' },    
+        'Sad': { start: '#87CEEB', end: '#0F52BA' },      
+        'Angry': { start: '#FF66B2', end: '#FF007F' },    
+        'Fear': { start: '#9FE2BF', end: '#008080' },     
+        'Surprise': { start: '#FFE4E1', end: '#F8C8DC' }, 
+        'Neutral': { start: '#B0E0E6', end: '#87CEEB' }   
       };
     }
   };
@@ -91,7 +91,7 @@ function Profile() {
     if (percentage < 5) return null;
 
     return (
-      <text x={x} y={y} fill="#fff" fontSize="13px" fontWeight="bold" textAnchor="middle" dominantBaseline="central">
+      <text x={x} y={y} fill="#ffffff" fontSize="13px" fontWeight="bold" textAnchor="middle" dominantBaseline="central">
         {`${percentage}%`}
       </text>
     );
@@ -129,8 +129,9 @@ function Profile() {
                   <ResponsiveContainer>
                     <PieChart>
                       <defs>
+                        {/* Always recreate defs uniquely based on mode to prevent browser caching old colors */}
                         {Object.keys(gradients).map((emotion) => (
-                          <linearGradient key={`grad-${emotion}`} id={`colorUv-${emotion}`} x1="0" y1="0" x2="1" y2="1">
+                          <linearGradient key={`grad-${theme.palette.mode}-${emotion}`} id={`colorUv-${emotion}`} x1="0" y1="0" x2="1" y2="1">
                             <stop offset="0%" stopColor={gradients[emotion].start} stopOpacity={1} />
                             <stop offset="100%" stopColor={gradients[emotion].end} stopOpacity={1} />
                           </linearGradient>
@@ -152,7 +153,8 @@ function Profile() {
                         paddingAngle={3}
                         labelLine={false}
                         label={renderCustomizedLabel}
-                        stroke="none"
+                        stroke={theme.palette.mode === 'dark' ? 'rgba(25,25,112,0.8)' : '#fff'} // Adds subtle matching border to slices
+                        strokeWidth={2}
                       >
                         {chartData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={`url(#colorUv-${gradients[entry.name] ? entry.name : 'Default'})`} />

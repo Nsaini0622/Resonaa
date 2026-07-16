@@ -7,8 +7,8 @@ from .models import UserProfile
 import jwt
 from datetime import datetime, timedelta
 from django.conf import settings
+from .auth import token_required
 
-# JWT Secret Key (for Security )
 JWT_SECRET = getattr(settings, 'SECRET_KEY', 'my_secret_key')
 
 @api_view(['POST'])
@@ -22,26 +22,22 @@ def signup(request):
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 @api_view(['POST'])
+# YAHAN @token_required NAHI HONA CHAHIYE
 def login(request):
-    # email/username and password from frontend
     username_or_email = request.data.get('username')
     password = request.data.get('password')
 
     if not username_or_email or not password:
         return Response({'error': 'Please provide username and password'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # find user ( username se or email se)
     user = UserProfile.objects(username=username_or_email).first()
     if not user:
         user = UserProfile.objects(email=username_or_email).first()
 
-    # wrong password if user nnot found
     if not user or not check_password(password, user.password):
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    # generate token (valid for 1 hour)
     payload = {
         'user_id': str(user.id),
         'username': user.username,
