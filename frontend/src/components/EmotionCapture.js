@@ -36,8 +36,11 @@ function EmotionCapture() {
   
   const fetchSongs = async (detectedMood) => {
     try {
-      // URL me &preference=... add kiya gaya
-      const res = await fetch(`http://127.0.0.1:8000/api/features/music-recommendations/?emotion=${detectedMood}&preference=${musicPref}`);
+      // Get the logged-in username from browser storage
+      const username = localStorage.getItem('username');
+      
+      // We pass BOTH emotion and username to the backend URL
+      const res = await fetch(`http://127.0.0.1:8000/api/features/music-recommendations/?emotion=${detectedMood}&preference=${musicPref}&username=${username}`);
       const musicData = await res.json();
       
       if (res.ok) {

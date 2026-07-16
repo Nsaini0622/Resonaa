@@ -21,3 +21,26 @@ class MoodHistory(mongoengine.Document):
 
     def __str__(self):
         return f"{self.username} - {self.emotion} at {self.timestamp}"
+    
+    # --- LISTENING HISTORY MODEL ---
+class ListeningHistory(mongoengine.Document):
+    meta = {'collection': 'listening_history'}
+    
+    # ehose songs
+    username = mongoengine.StringField(required=True)
+    
+    # Songs details (from iTunes)
+    track_id = mongoengine.StringField()           # Track ka unique ID
+    title = mongoengine.StringField(required=True) # song name
+    artist = mongoengine.StringField()             # Singer's name
+    album_cover = mongoengine.StringField()        # Album photo link
+    deezer_link = mongoengine.StringField()        # Play link
+    
+    # song suggested on which mood
+    associated_emotion = mongoengine.StringField()
+    
+    # saved when
+    timestamp = mongoengine.DateTimeField(default=datetime.utcnow)
+
+    def __str__(self):
+        return f"{self.username} - {self.title} by {self.artist}"

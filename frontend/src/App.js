@@ -81,7 +81,7 @@ function Navbar({ darkMode, setDarkMode }) {
   );
 }
 
-// Ye User ka Dashboard hai (Login karne ke baad dikhega)
+// This is the user's dashboard (it will be displayed after the user logs in)
 function UserDashboard() {
   const user = localStorage.getItem('username');
   const navigate = useNavigate();
@@ -170,10 +170,10 @@ function App() {
       <Router>
         <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
         <Routes>
-          {/* Agar user logged in hai to Naya Dashboard dikhao, warna Landing Page */}
+          {/* If the user is logged in, show the new dashboard; otherwise, show the landing page */}
           <Route path="/" element={user ? <UserDashboard /> : <LandingPage />} />
           
-          {/* EmotionCapture ab ek alag page ban gaya hai */}
+          {/* EmotionCapture is now a separate page */}
           <Route path="/detect" element={<Container sx={{mt: 8}}><EmotionCapture /></Container>} />
           
           <Route path="/signup" element={<Signup />} />

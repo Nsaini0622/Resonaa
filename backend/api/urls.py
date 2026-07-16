@@ -11,4 +11,6 @@ urlpatterns = [
     path('text-emotion/', views.analyze_text_emotion, name='text_emotion'),
 
     path('voice-emotion/', views.analyze_voice_emotion, name='voice_emotion'),
+
+    path('listening-history/', views.get_listening_history, name='listening_history'),
 ]

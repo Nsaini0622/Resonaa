@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import MoodHistory
 from users.auth import token_required
+from .models import MoodHistory, ListeningHistory 
 
 # --- FACIAL EMOTION API ---
 @api_view(['POST'])
@@ -69,7 +70,7 @@ def analyze_text_emotion(request):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-# --- VOICE EMOTION API ---
+# --- VOICE EMOTION API ----
 @api_view(['POST'])
 @token_required
 def analyze_voice_emotion(request):
@@ -121,6 +122,32 @@ def get_mood_history(request):
         })
         
     return Response({'history': history_list})
+
+
+# --- GET LISTENING HISTORY API ---
+@api_view(['GET'])
+@token_required
+def get_listening_history(request):
+    username = request.jwt_username
+    
+    if not username:
+        return Response({'error': 'Username is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    # Fetch all tracks for this user, ordered by newest first, limited to the last 50 tracks to prevent lag
+    tracks = ListeningHistory.objects(username=username).order_by('-timestamp')[:50]
+    
+    history_list = []
+    for track in tracks:
+        history_list.append({
+            'title': track.title,
+            'artist': track.artist,
+            'album_cover': track.album_cover,
+            'deezer_link': track.deezer_link,
+            'associated_emotion': track.associated_emotion,
+            'timestamp': track.timestamp.strftime('%Y-%m-%d %H:%M')
+        })
+        
+    return Response({'tracks': history_list})
 
 # --- MUSIC RECOMMENDATION API ---
 # iTunes API keywords (separated by language preference)
@@ -212,7 +239,27 @@ def get_music_recommendation(request):
                     'deezer_link': track.get('trackViewUrl')
                 })
             selected_query = fallback_query
-            
+
+        # --- NEW LOGIC: SAVE TO DATABASE ---
+        # Save all 10 songs that we finalized (in the tracks array) to the database.
+        username = request.query_params.get('username') 
+        # We'll also send the username in the API so we can identify which user the songs belong to. 
+        if username and len(tracks) > 0:
+            for track in tracks:
+                #A separate record will be created in the database for each track
+                history_track = ListeningHistory(
+                    username=username,
+                    track_id=str(track.get('id', '')),
+                    title=track.get('title', 'Unknown'),
+                    artist=track.get('artist', 'Unknown'),
+                    album_cover=track.get('album_cover', ''),
+                    deezer_link=track.get('deezer_link', ''),
+                    associated_emotion=emotion
+                )
+                history_track.save()
+        # -----------------------------------
+
+        #The existing return (which sends the data to the frontend)
         return Response({
             'emotion': emotion,
             'search_query': selected_query,
@@ -221,3 +268,4 @@ def get_music_recommendation(request):
         
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    

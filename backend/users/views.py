@@ -23,7 +23,7 @@ def signup(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
-# YAHAN @token_required NAHI HONA CHAHIYE
+# @token_required should not be used here
 def login(request):
     username_or_email = request.data.get('username')
     password = request.data.get('password')
