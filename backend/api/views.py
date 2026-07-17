@@ -8,6 +8,8 @@ from .models import MoodHistory
 from users.auth import token_required
 from .models import MoodHistory, ListeningHistory 
 
+
+
 # --- FACIAL EMOTION API ---
 @api_view(['POST'])
 @token_required
@@ -269,3 +271,46 @@ def get_music_recommendation(request):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
+
+
+# --- YOUTUBE PLAY API (Fixed using ytmusicapi) ---
+from ytmusicapi import YTMusic
+
+# initializing YTMusic object 
+ytmusic = YTMusic()
+
+@api_view(['GET'])
+@token_required
+def get_youtube_link(request):
+    song_name = request.query_params.get('song')
+    artist_name = request.query_params.get('artist')
+    
+    if not song_name:
+        return Response({'error': 'Song name is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    # Search query 
+    query = f"{song_name} {artist_name}"
+    
+    try:
+        # Searcha altual song on yt music
+        search_results = ytmusic.search(query, filter="songs", limit=1)
+        
+        if search_results and len(search_results) > 0:
+            # Video ID
+            video_id = search_results[0]['videoId']
+            return Response({
+                'youtube_url': f"https://www.youtube.com/watch?v={video_id}",
+                'title': search_results[0].get('title', song_name)
+            })
+            
+        # if songs not available through filters srch normal video
+        fallback_results = ytmusic.search(query, limit=1)
+        if fallback_results and len(fallback_results) > 0:
+            video_id = fallback_results[0]['videoId']
+            return Response({'youtube_url': f"https://www.youtube.com/watch?v={video_id}"})
+            
+        return Response({'error': 'Song not found on YouTube Music'}, status=status.HTTP_404_NOT_FOUND)
+            
+    except Exception as e:
+        print(f"YouTube Error: {e}")
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

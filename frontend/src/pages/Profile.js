@@ -3,12 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { Container, Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, Chip, Box, CircularProgress, useTheme, Grid, IconButton } from '@mui/material';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { PlayArrow, Headset } from '@mui/icons-material';
+import MusicPlayer from '../components/MusicPlayer';
 
 function Profile() {
   const [history, setHistory] = useState([]);
   const [chartData, setChartData] = useState([]);
   const [listeningHistory, setListeningHistory] = useState([]); // New state for songs
   const [loading, setLoading] = useState(true);
+  const [selectedTrack, setSelectedTrack] = useState(null);
+  const [playerOpen, setPlayerOpen] = useState(false);
   
   const username = localStorage.getItem('username');
   const navigate = useNavigate();
@@ -190,11 +193,13 @@ function Profile() {
                             {track.artist} • <Chip label={track.associated_emotion} size="small" sx={{ height: 16, fontSize: '0.65rem' }} />
                           </Typography>
                         </Box>
-                        {track.deezer_link && (
-                          <IconButton href={track.deezer_link} target="_blank" size="small" sx={{ background: theme.palette.secondary.main, color: '#fff', '&:hover': { background: theme.palette.secondary.dark } }}>
-                            <PlayArrow fontSize="small" />
-                          </IconButton>
-                        )}
+                        <IconButton 
+                          onClick={() => { setSelectedTrack(track); setPlayerOpen(true); }} 
+                          size="small" 
+                          sx={{ background: theme.palette.secondary.main, color: '#fff', '&:hover': { background: theme.palette.secondary.dark } }}
+                        >
+                          <PlayArrow fontSize="small" />
+                        </IconButton>
                       </Box>
                     ))}
                   </Box>
@@ -236,6 +241,8 @@ function Profile() {
           </Grid>
         )}
       </Paper>
+      {/* MUSIC PLAYER MODAL */}
+      <MusicPlayer open={playerOpen} onClose={() => { setPlayerOpen(false); setSelectedTrack(null); }} track={selectedTrack} />
     </Container>
   );
 }
