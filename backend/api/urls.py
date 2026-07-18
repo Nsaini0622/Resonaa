@@ -15,4 +15,6 @@ urlpatterns = [
     path('listening-history/', views.get_listening_history, name='listening_history'),
 
     path('youtube-play/', views.get_youtube_link, name='youtube_play'),
+
+    path('feedback/', views.submit_feedback, name='feedback'),
 ]

@@ -13,22 +13,22 @@ function MusicPlayer({ open, onClose, track }) {
     onClose();
   };
 
-  useEffect(() => {
-    if (open && track) {
-      setYoutubeId(null);
-      setErrorMsg("");
-      fetchYoutubeUrl(track.title, track.artist);
-    }
-  }, [open, track]);
-
-  const fetchYoutubeUrl = async (title, artist) => {
+  const fetchYoutubeUrl = async (title, artist, albumCover, emotionName) => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
       const encodedTitle = encodeURIComponent(title || "");
       const encodedArtist = encodeURIComponent(artist || "");
       
-      const response = await fetch(`http://127.0.0.1:8000/api/features/youtube-play/?song=${encodedTitle}&artist=${encodedArtist}`, {
+      const encodedCover = encodeURIComponent(albumCover || "");
+      
+      let pureEmotion = "Unknown";
+      if (emotionName) {
+        pureEmotion = emotionName.split(' ')[0]; 
+      }
+      const encodedEmotion = encodeURIComponent(pureEmotion);
+      
+      const response = await fetch(`http://127.0.0.1:8000/api/features/youtube-play/?song=${encodedTitle}&artist=${encodedArtist}&cover=${encodedCover}&emotion=${encodedEmotion}`, {
         method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -36,8 +36,6 @@ function MusicPlayer({ open, onClose, track }) {
       const data = await response.json();
       
       if (response.ok && data.youtube_url) {
-        // Backend bhejta hai: https://www.youtube.com/watch?v=VIDEO_ID
-        // Hume sirf VIDEO_ID nikalna hai
         const url = new URL(data.youtube_url);
         const vid = url.searchParams.get("v");
         setYoutubeId(vid);
@@ -51,6 +49,15 @@ function MusicPlayer({ open, onClose, track }) {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (open && track) {
+      setYoutubeId(null);
+      setErrorMsg("");
+      fetchYoutubeUrl(track.title, track.artist, track.album_cover, track.associated_emotion);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, track]);
 
   if (!track) return null;
 

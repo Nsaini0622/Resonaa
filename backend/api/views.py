@@ -7,6 +7,7 @@ from rest_framework import status
 from .models import MoodHistory
 from users.auth import token_required
 from .models import MoodHistory, ListeningHistory 
+from .models import MoodHistory, ListeningHistory, EmotionFeedback
 
 
 
@@ -242,24 +243,6 @@ def get_music_recommendation(request):
                 })
             selected_query = fallback_query
 
-        # --- NEW LOGIC: SAVE TO DATABASE ---
-        # Save all 10 songs that we finalized (in the tracks array) to the database.
-        username = request.query_params.get('username') 
-        # We'll also send the username in the API so we can identify which user the songs belong to. 
-        if username and len(tracks) > 0:
-            for track in tracks:
-                #A separate record will be created in the database for each track
-                history_track = ListeningHistory(
-                    username=username,
-                    track_id=str(track.get('id', '')),
-                    title=track.get('title', 'Unknown'),
-                    artist=track.get('artist', 'Unknown'),
-                    album_cover=track.get('album_cover', ''),
-                    deezer_link=track.get('deezer_link', ''),
-                    associated_emotion=emotion
-                )
-                history_track.save()
-        # -----------------------------------
 
         #The existing return (which sends the data to the frontend)
         return Response({
@@ -277,6 +260,11 @@ def get_music_recommendation(request):
 from ytmusicapi import YTMusic
 
 # initializing YTMusic object 
+from ytmusicapi import YTMusic
+ytmusic = YTMusic()
+        
+# Search query # --- YOUTUBE PLAY & SAVE HISTORY API ---
+from ytmusicapi import YTMusic
 ytmusic = YTMusic()
 
 @api_view(['GET'])
@@ -285,32 +273,77 @@ def get_youtube_link(request):
     song_name = request.query_params.get('song')
     artist_name = request.query_params.get('artist')
     
+    album_cover = request.query_params.get('cover', '')
+    emotion = request.query_params.get('emotion', 'Unknown')
+    username = request.jwt_username
+    
     if not song_name:
         return Response({'error': 'Song name is required'}, status=status.HTTP_400_BAD_REQUEST)
         
-    # Search query 
     query = f"{song_name} {artist_name}"
     
     try:
-        # Searcha altual song on yt music
         search_results = ytmusic.search(query, filter="songs", limit=1)
+        video_id = None
         
         if search_results and len(search_results) > 0:
-            # Video ID
             video_id = search_results[0]['videoId']
-            return Response({
-                'youtube_url': f"https://www.youtube.com/watch?v={video_id}",
-                'title': search_results[0].get('title', song_name)
-            })
+            title_to_save = search_results[0].get('title', song_name)
+        else:
+            fallback_results = ytmusic.search(query, limit=1)
+            if fallback_results and len(fallback_results) > 0:
+                video_id = fallback_results[0]['videoId']
+                title_to_save = song_name
+                
+        if video_id:
+            youtube_link = f"https://www.youtube.com/watch?v={video_id}"
             
-        # if songs not available through filters srch normal video
-        fallback_results = ytmusic.search(query, limit=1)
-        if fallback_results and len(fallback_results) > 0:
-            video_id = fallback_results[0]['videoId']
-            return Response({'youtube_url': f"https://www.youtube.com/watch?v={video_id}"})
+            # --- SAVE TO DATABASE ---
+            history_track = ListeningHistory(
+                username=username,
+                track_id=video_id,
+                title=title_to_save,
+                artist=artist_name,
+                album_cover=album_cover,
+                deezer_link=youtube_link,
+                associated_emotion=emotion
+            )
+            history_track.save()
+            # ------------------------
             
-        return Response({'error': 'Song not found on YouTube Music'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'youtube_url': youtube_link, 'title': title_to_save})
+        else:
+            return Response({'error': 'Song not found on YouTube Music'}, status=status.HTTP_404_NOT_FOUND)
             
     except Exception as e:
         print(f"YouTube Error: {e}")
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+
+# --- ML FEEDBACK API ---
+@api_view(['POST'])
+@token_required
+def submit_feedback(request):
+    username = request.jwt_username
+    mood = request.data.get('mood')
+    track_id = request.data.get('track_id')
+    is_accurate = request.data.get('is_accurate')
+    
+    if mood is None or is_accurate is None:
+        return Response({'error': 'Missing feedback data'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    try:
+        feedback = EmotionFeedback(
+            username=username,
+            mood=mood,
+            track_id=track_id,
+            is_accurate=is_accurate
+        )
+        feedback.save()
+        
+        # NOTE: In a full ML pipeline, we would trigger an Apache Spark job here 
+        # to retrain user preferences. For now, we save it for analysis.
+        
+        return Response({'message': 'Feedback processed successfully'})
+    except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

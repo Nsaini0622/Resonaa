@@ -3,6 +3,7 @@ import Webcam from 'react-webcam';
 import { useTheme } from '@mui/material/styles';
 import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import MusicPlayer from './MusicPlayer'; //
+import FeedbackWidget from './FeedbackWidget';
 
 function EmotionCapture() {
   const theme = useTheme();
@@ -44,7 +45,12 @@ function EmotionCapture() {
       const username = localStorage.getItem('username');
       const res = await fetch(`http://127.0.0.1:8000/api/features/music-recommendations/?emotion=${detectedMood}&preference=${musicPref}&username=${username}`);
       const musicData = await res.json();
-      if (res.ok) setSongs(musicData.tracks);
+      
+      if (res.ok) {
+        // API se aane wale har track me emotion attach kr dia, taaki MusicPlayer us emotion ko baad me use kar sake
+        const tracksWithEmotion = musicData.tracks.map(t => ({...t, associated_emotion: detectedMood}));
+        setSongs(tracksWithEmotion);
+      }
     } catch (error) {
       console.error("Error fetching songs", error);
     }
@@ -253,8 +259,11 @@ function EmotionCapture() {
               </div>
             ))}
           </div>
+
+          <FeedbackWidget detectedMood={emotion} />
         </div>
       )}
+      
 
       {/* PLAYER MODAL HOOK */}
       <MusicPlayer open={playerOpen} onClose={() => { setPlayerOpen(false); setSelectedTrack(null); }} track={selectedTrack} />

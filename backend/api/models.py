@@ -30,7 +30,7 @@ class ListeningHistory(mongoengine.Document):
     username = mongoengine.StringField(required=True)
     
     # Songs details (from iTunes)
-    track_id = mongoengine.StringField()           # Track ka unique ID
+    track_id = mongoengine.StringField()           # Track unique ID
     title = mongoengine.StringField(required=True) # song name
     artist = mongoengine.StringField()             # Singer's name
     album_cover = mongoengine.StringField()        # Album photo link
@@ -44,3 +44,16 @@ class ListeningHistory(mongoengine.Document):
 
     def __str__(self):
         return f"{self.username} - {self.title} by {self.artist}"
+    
+# --- REINFORCEMENT LEARNING FEEDBACK MODEL ---
+class EmotionFeedback(mongoengine.Document):
+    meta = {'collection': 'emotion_feedback'}
+    
+    username = mongoengine.StringField(required=True)
+    mood = mongoengine.StringField(required=True)
+    track_id = mongoengine.StringField()
+    is_accurate = mongoengine.BooleanField(required=True)
+    timestamp = mongoengine.DateTimeField(default=datetime.utcnow)
+
+    def __str__(self):
+        return f"{self.username} - Mood: {self.mood} - Accurate: {self.is_accurate}"
